@@ -43,6 +43,15 @@ public class UserController {
         boolean exists = queryService.existsById(id);
         return ResponseEntity.ok(exists);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        return queryService.findById(id)
+                .<ResponseEntity<?>>map(u -> ResponseEntity.ok(UserResourceFromEntityAssembler.toResource(u)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("{\"message\":\"User not found\"}"));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UpdateUserResource body) {
         var updated = commandService.handle(UpdateUserCommandFromResourceAssembler.toCommand(id, body));
