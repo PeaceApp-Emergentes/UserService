@@ -54,6 +54,11 @@ public class MunicipalityProfileController {
                         .body("{\"message\":\"Municipality profile not found for district\"}"));
     }
 
+    @GetMapping("/district/{district}/exists")
+    public ResponseEntity<Boolean> existsByDistrict(@PathVariable String district) {
+        return ResponseEntity.ok(queryService.findByDistrict(district).isPresent());
+    }
+
     @GetMapping("/{userId}/exists")
     public ResponseEntity<Boolean> existsByUserId(@PathVariable String userId) {
         return ResponseEntity.ok(queryService.existsByUserId(userId));

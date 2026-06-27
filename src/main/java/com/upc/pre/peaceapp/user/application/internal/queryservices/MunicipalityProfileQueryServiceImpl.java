@@ -27,9 +27,16 @@ public class MunicipalityProfileQueryServiceImpl implements MunicipalityProfileQ
     @Override
     public Optional<MunicipalityProfile> findByDistrict(String district) {
         var normalizedDistrict = normalizeDistrict(district);
-        return repository.findAll().stream()
+        // Puede haber más de un perfil para el mismo distrito (registros de prueba).
+        // Preferir el más reciente que tenga teléfono; si ninguno tiene, el más reciente.
+        var matches = repository.findAll().stream()
                 .filter(profile -> normalizeDistrict(profile.getDistrict()).equals(normalizedDistrict))
-                .findFirst();
+                .sorted(java.util.Comparator.comparing(MunicipalityProfile::getId).reversed())
+                .toList();
+        return matches.stream()
+                .filter(p -> p.getPhone() != null && !p.getPhone().isBlank())
+                .findFirst()
+                .or(() -> matches.stream().findFirst());
     }
 
     @Override
