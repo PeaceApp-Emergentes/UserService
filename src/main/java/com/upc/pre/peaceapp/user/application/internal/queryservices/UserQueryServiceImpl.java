@@ -20,12 +20,16 @@ public class UserQueryServiceImpl implements UserQueryService {
     }
     @Override
     public boolean existsById(Long id) {
-        return userRepository.existsById(id);
+        // El id que llega de otros servicios es el id del IAM, guardado en la columna user_id.
+        // Validamos por user_id y, como respaldo, por la clave primaria.
+        return userRepository.existsByUserId(String.valueOf(id)) || userRepository.existsById(id);
     }
     @Override
     public Optional<UserProfile> findById(Long id) {
         log.info("Fetching user by id: {}", id);
-        return userRepository.findById(id);
+        // Preferimos el id del IAM (columna user_id); si no, la clave primaria.
+        Optional<UserProfile> byUserId = userRepository.findByUserId(String.valueOf(id));
+        return byUserId.isPresent() ? byUserId : userRepository.findById(id);
     }
     @Override
     public Optional<UserProfile> handle(GetUserByEmailQuery query) {
